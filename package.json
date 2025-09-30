@@ -1,0 +1,48 @@
+{
+  "name": "china-geo-search",
+  "version": "1.0.0",
+  "description": "中国地理数据模糊搜索工具，支持省、市、区的模糊搜索",
+  "main": "index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "test": "node test.js",
+    "start": "node index.js",
+    "build": "echo 'No build step required'",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "china",
+    "geography",
+    "search",
+    "province",
+    "city",
+    "district",
+    "adcode",
+    "地理",
+    "搜索",
+    "行政区划"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/china-geo-search.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/china-geo-search/issues"
+  },
+  "homepage": "https://github.com/yourusername/china-geo-search#readme",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "index.js",
+    "info.json",
+    "types/",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/node": "^18.0.0"
+  }
+}
