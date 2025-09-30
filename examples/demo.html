@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国地理数据搜索 - ES6 模块示例</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .search-section {
+            margin-bottom: 30px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .search-btn {
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .search-btn:hover {
+            background: #0056b3;
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .result-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .result-details {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ 中国地理数据搜索</h1>
+        
+        <div class="search-section">
+            <form class="search-form" id="searchForm">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="输入地名进行搜索，如：北京、上海、朝阳区..."
+                >
+                <button type="submit" class="search-btn">搜索</button>
+            </form>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="loading">正在加载地理数据...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 使用 ES6 模块导入
+        import geoSearch, { search, getStats } from '../index.js';
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // 更新统计信息
+                const stats = getStats();
+                console.log('地理数据统计:', stats);
+                
+                // 设置搜索表单事件
+                setupSearchForm();
+                
+                // 清空加载提示
+                document.getElementById('results').innerHTML = '';
+            } catch (error) {
+                showError('初始化失败: ' + error.message);
+            }
+        });
+        
+        function setupSearchForm() {
+            const form = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+            
+            // 实时搜索
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                if (query.length >= 2) {
+                    performSearch();
+                } else if (query.length === 0) {
+                    clearResults();
+                }
+            });
+        }
+        
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (!query) {
+                clearResults();
+                return;
+            }
+            console.log(13212)
+            try {
+                const results = search(query);
+                displayResults(results, query);
+            } catch (error) {
+                showError('搜索失败: ' + error.message);
+            }
+        }
+        
+        function displayResults(results, query) {
+            const resultsContainer = document.getElementById('results');
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="loading">
+                        未找到包含 "${query}" 的结果
+                    </div>
+                `;
+                return;
+            }
+            
+            const resultsHtml = results.slice(0, 10).map(result => `
+                <div class="result-item">
+                    <div class="result-name">${result.name}</div>
+                    <div class="result-details">
+                        <div><strong>类型:</strong> ${getTypeLabel(result.level)}</div>
+                        <div><strong>代码:</strong> ${result.adcode}</div>
+                        <div><strong>相似度:</strong> ${(result.similarity * 100).toFixed(1)}%</div>
+                        ${result.fullPath ? `<div><strong>完整路径:</strong> ${result.fullPath}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            resultsContainer.innerHTML = `
+                <h3>搜索结果 (${results.length} 个结果，显示前10个)</h3>
+                ${resultsHtml}
+            `;
+        }
+        
+        function getTypeLabel(level) {
+            const labels = {
+                'province': '省份',
+                'city': '城市',
+                'district': '区县'
+            };
+            return labels[level] || level;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function showError(message) {
+            document.getElementById('results').innerHTML = `
+                <div class="error">${message}</div>
+            `;
+        }
+    </script>
+</body>
+</html>
