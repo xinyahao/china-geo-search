@@ -1,5 +1,5 @@
 // 直接导入 JSON 数据
-import GEO_DATA from './info.json' with { type: 'json' };
+const GEO_DATA = require('./info.json');
 
 /**
  * 中国地理数据模糊搜索工具
@@ -252,13 +252,19 @@ try {
     };
 }
 
-// ES6 模块导出
-export { ChinaGeoSearch, geoSearch };
+// CommonJS 模块导出
+module.exports = {
+    ChinaGeoSearch,
+    geoSearch,
+    search: (query, options) => geoSearch.search(query, options),
+    getByAdcode: (adcode) => geoSearch.getByAdcode(adcode),
+    getStats: () => geoSearch.getStats()
+};
 
-// 便捷方法导出
-export const search = (query, options) => geoSearch.search(query, options);
-export const getByAdcode = (adcode) => geoSearch.getByAdcode(adcode);
-export const getStats = () => geoSearch.getStats();
-
-// 默认导出
-export default geoSearch;
+// 兼容 ES6 模块导入
+module.exports.ChinaGeoSearch = ChinaGeoSearch;
+module.exports.geoSearch = geoSearch;
+module.exports.search = (query, options) => geoSearch.search(query, options);
+module.exports.getByAdcode = (adcode) => geoSearch.getByAdcode(adcode);
+module.exports.getStats = () => geoSearch.getStats();
+module.exports.default = geoSearch;
